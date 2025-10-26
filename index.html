@@ -1,0 +1,3395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloomu - Organização de Estudos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-primary-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #06b6d4;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+            --space-xl: 24px;
+            --space-2xl: 32px;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.35);
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-card-hover: rgba(255, 255, 255, 0.95);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2xl);
+            padding: var(--space-lg) var(--space-xl);
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: var(--space-xs);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .main-nav {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: var(--space-xl);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .profile-card { grid-column: span 3; }
+        .calendar-card { grid-column: span 5; }
+        .tasks-card { grid-column: span 4; }
+        .technologies-card { grid-column: span 6; }
+        .notes-card { grid-column: span 6; }
+        .github-card { grid-column: span 12; }
+
+        .github-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+        }
+
+        .github-stats-section {
+            grid-column: 1;
+        }
+
+        .github-chart-section {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .card-badge {
+            background: var(--accent-primary);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-primary-hover);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-sm {
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            padding: var(--space-sm);
+            width: 36px;
+            height: 36px;
+        }
+
+        .input-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .input-field, .textarea-field, .select-field {
+            width: 100%;
+            padding: var(--space-md);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .input-field:focus, .textarea-field:focus, .select-field:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .input-with-button .input-field {
+            flex: 1;
+        }
+
+        .calendar-wrapper {
+            margin-bottom: var(--space-lg);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .calendar-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+        }
+
+        .weekday {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: var(--space-sm);
+            text-transform: uppercase;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.today {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .calendar-day.studied {
+            background: linear-gradient(135deg, var(--success), var(--info));
+            color: white;
+            font-weight: 700;
+        }
+
+        .calendar-day.has-notes::after {
+            content: '•';
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+        }
+
+        .progress-container {
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--info));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .tasks-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid transparent;
+            transition: all var(--transition-normal);
+        }
+
+        .checklist-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .checklist-item.completed {
+            opacity: 0.7;
+        }
+
+        .checklist-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--text-muted);
+            background: transparent;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox:checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-category {
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .task-text {
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .task-meta {
+            display: flex;
+            gap: var(--space-md);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .checklist-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .tech-categories {
+            display: grid;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: var(--space-sm);
+        }
+
+        .tech-category {
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--space-lg);
+            border-radius: var(--border-radius);
+        }
+
+        .category-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .tech-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .tech-item.studied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+        }
+
+        .tech-item.studied::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 18px;
+            height: 18px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .tech-icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-xs);
+        }
+
+        .tech-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .github-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .github-stat {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: var(--space-md);
+        }
+
+        .notes-grid {
+            display: grid;
+            gap: var(--space-md);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .note-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--space-lg);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-primary);
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+        }
+
+        .note-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .note-body {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .note-meta {
+            margin-top: var(--space-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .note-actions {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .note-card:hover .note-actions {
+            opacity: 1;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: var(--space-xl);
+            right: var(--space-xl);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: var(--space-lg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            min-width: 300px;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all var(--transition-normal);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .profile-card,
+            .calendar-card,
+            .tasks-card,
+            .technologies-card,
+            .notes-card,
+            .github-card {
+                grid-column: span 12;
+            }
+            
+            .github-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .github-stats-section,
+            .github-chart-section {
+                grid-column: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-md);
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md);
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .main-nav {
+                display: none;
+            }
+            
+            .github-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-items {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        .tasks-container::-webkit-scrollbar,
+        .notes-grid::-webkit-scrollbar,
+        .tech-categories::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tasks-container::-webkit-scrollbar-track,
+        .notes-grid::-webkit-scrollbar-track,
+        .tech-categories::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .tasks-container::-webkit-scrollbar-thumb,
+        .notes-grid::-webkit-scrollbar-thumb,
+        .tech-categories::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-preview {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .user-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--info));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: var(--space-lg);
+            margin-top: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .profile-stats .stat {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .profile-stats .stat-value {
+            display: block;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .profile-stats .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+        }
+
+        @media (max-width: 1024px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .selected-techs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            min-height: 40px;
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tech-tag {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-xs) var(--space-sm);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--accent-primary);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .tech-tag:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+        }
+
+        .tech-tag.studied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .setting-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-muted);
+            border-radius: 4px;
+            position: relative;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-xl);
+        }
+
+        @media (max-width: 1024px) {
+            .links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            border: 1px solid transparent;
+            transition: all var(--transition-normal);
+        }
+
+        .link-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .link-content {
+            flex: 1;
+        }
+
+        .link-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+            display: block;
+            text-decoration: none;
+        }
+
+        .link-title:hover {
+            color: var(--accent-primary);
+        }
+
+        .link-url {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: var(--space-xs);
+            word-break: break-all;
+        }
+
+        .link-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-top: var(--space-sm);
+        }
+
+        .link-category {
+            font-size: 0.75rem;
+            padding: var(--space-xs) var(--space-sm);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: var(--text-muted);
+        }
+
+        .link-actions {
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .link-item:hover .link-actions {
+            opacity: 1;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border: 1px solid transparent;
+        }
+
+        .category-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .category-info {
+            flex: 1;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .category-count {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-2xl);
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
+            font-size: 2rem;
+        }
+
+        .empty-state p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .badge.priority-low { background: var(--success); }
+        .badge.priority-medium { background: var(--warning); }
+        .badge.priority-high { background: var(--danger); }
+
+        .footer {
+            margin-top: var(--space-2xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: var(--space-sm);
+        }
+
+        .btn-link:hover {
+            color: var(--text-primary);
+        }
+
+        .text-muted {
+            color: var(--text-muted);
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--border-radius-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-hover);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-xl);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: var(--space-xl);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-md);
+            padding: var(--space-xl);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: var(--space-sm);
+        }
+
+        .gap-4 {
+            gap: var(--space-md);
+        }
+
+        .gap-6 {
+            gap: var(--space-lg);
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mt-4 {
+            margin-top: var(--space-md);
+        }
+
+        .mb-4 {
+            margin-bottom: var(--space-md);
+        }
+
+        .ml-auto {
+            margin-left: auto;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .weekly-schedule-full {
+            overflow-x: auto;
+        }
+
+        .week-days-full {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            min-width: 800px;
+        }
+
+        .day-header-full {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: var(--space-sm);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .time-row-full {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: var(--space-sm);
+            align-items: center;
+            min-width: 800px;
+        }
+
+        .time-slot-full {
+            height: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--border-radius-sm);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .time-slot-full:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-primary);
+        }
+
+        .time-slot-full.has-activity {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .time-label-full {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .notes-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-seedling"></i> Bloomu</h1>
+                <p class="subtitle">Organize seus estudos e acompanhe seu crescimento</p>
+            </div>
+            <div class="header-controls">
+                <nav class="main-nav">
+                    <button class="nav-btn active" data-page="dashboard">
+                        <i class="fas fa-home"></i> Dashboard
+                    </button>
+                    <button class="nav-btn" data-page="profile">
+                        <i class="fas fa-user"></i> Perfil
+                    </button>
+                    <button class="nav-btn" data-page="weekly-schedule">
+                        <i class="fas fa-calendar-week"></i> Cronograma
+                    </button>
+                    <button class="nav-btn" data-page="links">
+                        <i class="fas fa-link"></i> Links Úteis
+                    </button>
+                </nav>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="page active" id="dashboard">
+            <div class="dashboard-grid">
+                <div class="card profile-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-user-circle"></i> Meu Perfil</h2>
+                    </div>
+                    <div class="profile-preview">
+                        <div class="user-avatar-large">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h3 id="userDisplayName">Estudante</h3>
+                            <p class="text-muted" id="userDisplayBio">Desenvolvedor Full Stack</p>
+                            <div class="profile-stats">
+                                <div class="stat">
+                                    <span class="stat-value" id="studyDays">42</span>
+                                    <span class="stat-label">Dias</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="progressPercentage">78%</span>
+                                    <span class="stat-label">Progresso</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="techCount">12</span>
+                                    <span class="stat-label">Tecnologias</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="text-sm">Meta Semanal</span>
+                            <span class="text-sm font-semibold" id="weeklyGoal">65%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="weeklyProgress" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card calendar-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Calendário</h2>
+                        <div class="card-badge" id="calendarBadge">Outubro 2023</div>
+                    </div>
+                    <div class="calendar-wrapper">
+                        <div class="calendar-header">
+                            <button class="btn btn-icon btn-secondary" id="prevMonth">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3 class="calendar-title" id="currentMonth">Outubro 2023</h3>
+                            <button class="btn btn-icon btn-secondary" id="nextMonth">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <div class="weekday">Dom</div>
+                            <div class="weekday">Seg</div>
+                            <div class="weekday">Ter</div>
+                            <div class="weekday">Qua</div>
+                            <div class="weekday">Qui</div>
+                            <div class="weekday">Sex</div>
+                            <div class="weekday">Sáb</div>
+                        </div>
+                        <div class="calendar-grid" id="calendarDays">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card tasks-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-tasks"></i> Tarefas</h2>
+                        <button class="btn btn-sm btn-primary" id="addTaskBtn">
+                            <i class="fas fa-plus"></i> Nova
+                        </button>
+                    </div>
+                    <div class="tasks-container">
+                        <div class="tasks-list" id="tasksList">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card technologies-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-code"></i> Tecnologias</h2>
+                        <div class="flex gap-2">
+                            <button class="btn btn-sm btn-secondary" id="filterTechBtn">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="searchTechBtn">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tech-categories" id="techCategories">
+                    </div>
+                </div>
+
+                <div class="card notes-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-sticky-note"></i> Anotações</h2>
+                        <button class="btn btn-sm btn-primary" id="addNoteBtn">
+                            <i class="fas fa-plus"></i> Nova
+                        </button>
+                    </div>
+                    <div class="notes-container">
+                        <div class="notes-grid" id="notesList">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card github-card">
+                    <div class="github-stats-section">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fab fa-github"></i> Estatísticas GitHub</h2>
+                            <button class="btn btn-sm btn-primary" id="connectGithub">
+                                <i class="fas fa-sync-alt"></i> Atualizar
+                            </button>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Usuário GitHub</label>
+                            <div class="input-with-button">
+                                <input type="text" id="githubUsername" class="input-field" placeholder="seu-usuario">
+                                <button class="btn btn-primary" id="loadGithubData">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="github-stats-grid">
+                            <div class="github-stat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-code-branch"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="ghRepos">0</div>
+                                    <div class="stat-label">Repositórios</div>
+                                </div>
+                            </div>
+                            <div class="github-stat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="ghStars">0</div>
+                                    <div class="stat-label">Estrelas</div>
+                                </div>
+                            </div>
+                            <div class="github-stat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="ghCommits">0</div>
+                                    <div class="stat-label">Commits</div>
+                                </div>
+                            </div>
+                            <div class="github-stat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value" id="ghFollowers">0</div>
+                                    <div class="stat-label">Seguidores</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Tecnologias em uso</label>
+                            <div class="selected-techs" id="githubTechs">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="github-chart-section">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-chart-pie"></i> Linguagens</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="languageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="profile">
+            <div class="page-header">
+                <button class="btn btn-secondary" id="backToDashboard">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <h1><i class="fas fa-user"></i> Meu Perfil</h1>
+            </div>
+            <div class="profile-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-user-edit"></i> Informações Pessoais</h2>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label"><i class="fas fa-user"></i> Nome</label>
+                        <input type="text" id="profileName" class="input-field" value="Estudante">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="profileEmail" class="input-field" value="estudante@exemplo.com">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label"><i class="fas fa-briefcase"></i> Profissão</label>
+                        <input type="text" id="profileJob" class="input-field" value="Desenvolvedor Full Stack">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label"><i class="fas fa-graduation-cap"></i> Nível</label>
+                        <select class="select-field" id="profileLevel">
+                            <option>Iniciante</option>
+                            <option selected>Intermediário</option>
+                            <option>Avançado</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-full" id="saveProfile">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-cog"></i> Configurações</h2>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Tecnologias Estudadas</label>
+                        <div class="selected-techs" id="profileTechs">
+                        </div>
+                        <button class="btn btn-secondary w-full mt-4" id="manageTechs">
+                            <i class="fas fa-edit"></i> Gerenciar Tecnologias
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span class="checkmark"></span>
+                            Notificações por email
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="darkMode" checked>
+                            <span class="checkmark"></span>
+                            Modo escuro
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="shareProgress">
+                            <span class="checkmark"></span>
+                            Compartilhar progresso
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="weekly-schedule">
+            <div class="page-header">
+                <button class="btn btn-secondary" id="backToDashboard3">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <h1><i class="fas fa-calendar-week"></i> Cronograma Semanal</h1>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-clock"></i> Cronograma Semanal</h2>
+                    <button class="btn btn-sm btn-secondary" id="resetWeeklySchedule">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+                <div class="weekly-schedule-full" id="weeklyScheduleFull">
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="links">
+            <div class="page-header">
+                <button class="btn btn-secondary" id="backToDashboard2">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <h1><i class="fas fa-link"></i> Links Úteis</h1>
+            </div>
+            <div class="links-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-folder"></i> Categorias</h2>
+                        <button class="btn btn-sm btn-primary" id="addCategoryBtn">
+                            <i class="fas fa-plus"></i> Nova
+                        </button>
+                    </div>
+                    <div class="categories-grid" id="linkCategories">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-bookmark"></i> Links Salvos</h2>
+                        <button class="btn btn-sm btn-primary" id="addLinkBtn">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                    <div class="links-list" id="savedLinks">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div>Bloomu v1.0 - Feito com amor por Pâmela Amani 𓏲 ๋࣭ ࣪ ˖🎐</div>
+                <div>
+                    <button class="btn-link" id="showAbout">
+                        <i class="fas fa-info-circle"></i> Sobre
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="toast-container">
+    </div>
+
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="card-title"><i class="fas fa-info-circle"></i> Sobre o Bloomu</h2>
+                <button class="btn btn-icon btn-secondary" id="closeAboutModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>O Bloomu é uma ferramenta para ajudar estudantes e desenvolvedores a organizar seus estudos e acompanhar seu progresso.</p>
+                <p><strong>Recursos:</strong></p>
+                <ul>
+                    <li>Controle de tarefas e metas de estudo</li>
+                    <li>Roadmap tecnológico personalizável</li>
+                    <li>Cronograma semanal de estudos</li>
+                    <li>Estatísticas do GitHub</li>
+                    <li>Sistema de anotações</li>
+                </ul>
+                <p><strong>Versão:</strong> 1.0</p>
+                <p><strong>Criado com carinho por:</strong> Pâmela Amani</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="closeAboutModalBtn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="card-title" id="taskModalTitle">Nova Tarefa</h2>
+                <button class="btn btn-icon btn-secondary" id="closeTaskModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label class="input-label">Descrição da Tarefa</label>
+                    <input type="text" id="taskText" class="input-field" placeholder="Descreva a tarefa...">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Categoria</label>
+                    <select class="select-field" id="taskCategory">
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="React">React</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="CSS">CSS</option>
+                        <option value="HTML">HTML</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Tempo Estimado</label>
+                    <input type="text" id="taskTime" class="input-field" placeholder="ex: 2h, 30min">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Data</label>
+                    <input type="text" id="taskDate" class="input-field" placeholder="ex: Hoje, Amanhã, 01/01">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelTask">Cancelar</button>
+                <button class="btn btn-primary" id="saveTask">Salvar Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="card-title" id="noteModalTitle">Nova Anotação</h2>
+                <button class="btn btn-icon btn-secondary" id="closeNoteModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label class="input-label">Título</label>
+                    <input type="text" id="noteTitle" class="input-field" placeholder="Título da anotação">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Conteúdo</label>
+                    <textarea id="noteContent" class="textarea-field" rows="6" placeholder="Escreva sua anotação aqui..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Tags (separadas por vírgula)</label>
+                    <input type="text" id="noteTags" class="input-field" placeholder="ex: javascript, react, hooks">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelNote">Cancelar</button>
+                <button class="btn btn-primary" id="saveNote">Salvar Anotação</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linkModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="card-title" id="linkModalTitle">Novo Link</h2>
+                <button class="btn btn-icon btn-secondary" id="closeLinkModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label class="input-label">Título</label>
+                    <input type="text" id="linkTitle" class="input-field" placeholder="Título do link">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">URL</label>
+                    <input type="text" id="linkUrl" class="input-field" placeholder="https://exemplo.com">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Categoria</label>
+                    <input type="text" id="linkCategory" class="input-field" placeholder="ex: JavaScript, React, etc.">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Ícone (classe FontAwesome)</label>
+                    <input type="text" id="linkIcon" class="input-field" placeholder="fab fa-js">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelLink">Cancelar</button>
+                <button class="btn btn-primary" id="saveLink">Salvar Link</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const pages = document.querySelectorAll('.page');
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const backButtons = document.querySelectorAll('#backToDashboard, #backToDashboard2, #backToDashboard3');
+            const showAboutBtn = document.getElementById('showAbout');
+            const aboutModal = document.getElementById('aboutModal');
+            const closeAboutModalBtns = document.querySelectorAll('#closeAboutModal, #closeAboutModalBtn');
+            const toastContainer = document.querySelector('.toast-container');
+            const githubUsername = document.getElementById('githubUsername');
+            const loadGithubData = document.getElementById('loadGithubData');
+            const connectGithub = document.getElementById('connectGithub');
+            const saveProfile = document.getElementById('saveProfile');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+            const profileJob = document.getElementById('profileJob');
+            const profileLevel = document.getElementById('profileLevel');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const tasksList = document.getElementById('tasksList');
+            const taskModal = document.getElementById('taskModal');
+            const closeTaskModal = document.getElementById('closeTaskModal');
+            const cancelTask = document.getElementById('cancelTask');
+            const saveTask = document.getElementById('saveTask');
+            const taskModalTitle = document.getElementById('taskModalTitle');
+            const taskText = document.getElementById('taskText');
+            const taskCategory = document.getElementById('taskCategory');
+            const taskTime = document.getElementById('taskTime');
+            const taskDate = document.getElementById('taskDate');
+            const addNoteBtn = document.getElementById('addNoteBtn');
+            const notesList = document.getElementById('notesList');
+            const noteModal = document.getElementById('noteModal');
+            const closeNoteModal = document.getElementById('closeNoteModal');
+            const cancelNote = document.getElementById('cancelNote');
+            const saveNote = document.getElementById('saveNote');
+            const noteModalTitle = document.getElementById('noteModalTitle');
+            const noteTitle = document.getElementById('noteTitle');
+            const noteContent = document.getElementById('noteContent');
+            const noteTags = document.getElementById('noteTags');
+            const addLinkBtn = document.getElementById('addLinkBtn');
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const linkCategories = document.getElementById('linkCategories');
+            const savedLinks = document.getElementById('savedLinks');
+            const linkModal = document.getElementById('linkModal');
+            const closeLinkModal = document.getElementById('closeLinkModal');
+            const cancelLink = document.getElementById('cancelLink');
+            const saveLink = document.getElementById('saveLink');
+            const linkModalTitle = document.getElementById('linkModalTitle');
+            const linkTitle = document.getElementById('linkTitle');
+            const linkUrl = document.getElementById('linkUrl');
+            const linkCategory = document.getElementById('linkCategory');
+            const linkIcon = document.getElementById('linkIcon');
+            const filterTechBtn = document.getElementById('filterTechBtn');
+            const searchTechBtn = document.getElementById('searchTechBtn');
+            const techCategories = document.getElementById('techCategories');
+            const profileTechs = document.getElementById('profileTechs');
+            const githubTechs = document.getElementById('githubTechs');
+            const manageTechs = document.getElementById('manageTechs');
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+            const currentMonth = document.getElementById('currentMonth');
+            const calendarBadge = document.getElementById('calendarBadge');
+            const calendarDays = document.getElementById('calendarDays');
+            const userDisplayName = document.getElementById('userDisplayName');
+            const userDisplayBio = document.getElementById('userDisplayBio');
+            const studyDays = document.getElementById('studyDays');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const techCount = document.getElementById('techCount');
+            const weeklyGoal = document.getElementById('weeklyGoal');
+            const weeklyProgress = document.getElementById('weeklyProgress');
+            const resetWeeklyScheduleBtn = document.getElementById('resetWeeklySchedule');
+            const weeklyScheduleFull = document.getElementById('weeklyScheduleFull');
+            
+            let userData = {
+                name: 'Estudante',
+                email: 'estudante@exemplo.com',
+                job: 'Desenvolvedor Full Stack',
+                level: 'Intermediário',
+                studyDays: 42,
+                progress: 78,
+                weeklyGoal: 65,
+                technologies: ['JavaScript', 'React', 'Node.js', 'Python', 'MongoDB'],
+                githubUsername: '',
+                studiedTechs: []
+            };
+            
+            let tasks = [
+                { id: 1, text: 'Estudar Promises e Async/Await', category: 'JavaScript', time: '2h', date: 'Hoje', completed: true },
+                { id: 2, text: 'Criar componente de formulário', category: 'React', time: '1h', date: 'Amanhã', completed: false },
+                { id: 3, text: 'Implementar API REST', category: 'Node.js', time: '3h', date: 'Quinta', completed: false },
+                { id: 4, text: 'Aprender Grid Layout', category: 'CSS', time: '1.5h', date: 'Ontem', completed: true }
+            ];
+            
+            let notes = [
+                { id: 1, title: 'React Hooks', content: 'useState: para gerenciar estado em componentes funcionais\nuseEffect: para side effects (substitui lifecycle methods)\nuseContext: para acessar context sem prop drilling', tags: '#react #hooks', date: 'Ontem' },
+                { id: 2, title: 'Promises vs Async/Await', content: 'Async/await torna o código mais legível que promises encadeadas.\nUsar try/catch para tratamento de erro com async/await.', tags: '#javascript #async', date: '3 dias atrás' }
+            ];
+            
+            let links = [
+                { id: 1, title: 'MDN Web Docs', url: 'https://developer.mozilla.org', category: 'JavaScript', icon: 'fab fa-js' },
+                { id: 2, title: 'React Documentation', url: 'https://reactjs.org', category: 'React', icon: 'fab fa-react' },
+                { id: 3, title: 'Node.js Guides', url: 'https://nodejs.org', category: 'Node.js', icon: 'fab fa-node-js' },
+                { id: 4, title: 'MongoDB University', url: 'https://university.mongodb.com', category: 'Banco de Dados', icon: 'fas fa-database' }
+            ];
+            
+            let categories = ['JavaScript', 'React', 'Node.js', 'Banco de Dados', 'CSS', 'HTML'];
+            
+            const allTechnologies = {
+                "Linguagens de Programação": [
+                    { name: "JavaScript", icon: "fab fa-js", color: "#f7df1e" },
+                    { name: "TypeScript", icon: "fab fa-js-square", color: "#3178c6" },
+                    { name: "Python", icon: "fab fa-python", color: "#3776ab" },
+                    { name: "Java", icon: "fab fa-java", color: "#007396" },
+                    { name: "C", icon: "fas fa-c", color: "#00599c" },
+                    { name: "C++", icon: "fas fa-c", color: "#00599c" },
+                    { name: "C#", icon: "fab fa-microsoft", color: "#239120" },
+                    { name: "Go", icon: "fab fa-golang", color: "#00add8" },
+                    { name: "Rust", icon: "fas fa-crab", color: "#000000" },
+                    { name: "Ruby", icon: "fas fa-gem", color: "#cc342d" },
+                    { name: "PHP", icon: "fab fa-php", color: "#777bb4" },
+                    { name: "Swift", icon: "fab fa-swift", color: "#fa7343" },
+                    { name: "Kotlin", icon: "fas fa-k", color: "#7f52ff" },
+                    { name: "Dart", icon: "fas fa-dart", color: "#0175c2" },
+                    { name: "R", icon: "fas fa-r-project", color: "#276DC3" },
+                    { name: "Scala", icon: "fas fa-scala", color: "#DC3220" },
+                    { name: "Haskell", icon: "fas fa-haskell", color: "#5D4F85" },
+                    { name: "Elixir", icon: "fas fa-elixir", color: "#4B275F" },
+                    { name: "Lua", icon: "fas fa-moon", color: "#000080" },
+                    { name: "Perl", icon: "fab fa-perl", color: "#003E74" },
+                    { name: "Julia", icon: "fas fa-julia", color: "#9558B2" },
+                    { name: "Shell", icon: "fas fa-terminal", color: "#4EAA25" },
+                    { name: "Bash", icon: "fas fa-terminal", color: "#4EAA25" },
+                    { name: "PowerShell", icon: "fab fa-microsoft", color: "#012456" },
+                    { name: "Assembly", icon: "fas fa-microchip", color: "#6E4C13" },
+                    { name: "Objective-C", icon: "fab fa-apple", color: "#3A95E5" },
+                    { name: "Groovy", icon: "fas fa-groovy", color: "#4298B8" },
+                    { name: "F#", icon: "fas fa-fsharp", color: "#378BBA" },
+                    { name: "OCaml", icon: "fas fa-ocaml", color: "#EC6813" },
+                    { name: "Nim", icon: "fas fa-nim", color: "#FFE953" },
+                    { name: "Crystal", icon: "fas fa-gem", color: "#000000" },
+                    { name: "Zig", icon: "fas fa-zig", color: "#F7A41D" }
+                ],
+                "Tecnologias Web": [
+                    { name: "HTML", icon: "fab fa-html5", color: "#e34f26" },
+                    { name: "CSS", icon: "fab fa-css3-alt", color: "#1572b6" },
+                    { name: "Sass", icon: "fab fa-sass", color: "#cc6699" },
+                    { name: "Less", icon: "fab fa-less", color: "#1d365d" },
+                    { name: "Tailwind", icon: "fab fa-css3-alt", color: "#06b6d4" },
+                    { name: "Bootstrap", icon: "fab fa-bootstrap", color: "#7952b3" }
+                ],
+                "Frameworks e Bibliotecas": [
+                    { name: "React", icon: "fab fa-react", color: "#61dafb" },
+                    { name: "Vue", icon: "fab fa-vuejs", color: "#4fc08d" },
+                    { name: "Angular", icon: "fab fa-angular", color: "#dd0031" },
+                    { name: "Svelte", icon: "fab fa-js", color: "#ff3e00" },
+                    { name: "Next.js", icon: "fas fa-arrow-right", color: "#000000" },
+                    { name: "Nuxt.js", icon: "fab fa-vuejs", color: "#00c58e" },
+                    { name: "Express", icon: "fab fa-node-js", color: "#000000" },
+                    { name: "Django", icon: "fas fa-django", color: "#092e20" },
+                    { name: "Flask", icon: "fas fa-flask", color: "#000000" },
+                    { name: "Spring", icon: "fas fa-leaf", color: "#6db33f" },
+                    { name: "Laravel", icon: "fab fa-laravel", color: "#FF2D20" },
+                    { name: "Ruby on Rails", icon: "fab fa-ruby", color: "#CC0000" },
+                    { name: "ASP.NET", icon: "fab fa-microsoft", color: "#512BD4" },
+                    { name: "FastAPI", icon: "fas fa-bolt", color: "#009688" }
+                ],
+                "Ferramentas e Plataformas": [
+                    { name: "Node.js", icon: "fab fa-node-js", color: "#339933" },
+                    { name: "npm", icon: "fab fa-npm", color: "#cb3837" },
+                    { name: "Yarn", icon: "fas fa-yarn", color: "#2c8ebb" },
+                    { name: "Webpack", icon: "fas fa-cube", color: "#8dd6f9" },
+                    { name: "Vite", icon: "fas fa-bolt", color: "#646cff" },
+                    { name: "Babel", icon: "fas fa-exchange-alt", color: "#F9DC3E" },
+                    { name: "ESLint", icon: "fas fa-check-circle", color: "#4B32C3" },
+                    { name: "Prettier", icon: "fas fa-code", color: "#F7B93E" },
+                    { name: "Git", icon: "fab fa-git-alt", color: "#f05032" },
+                    { name: "GitHub", icon: "fab fa-github", color: "#181717" },
+                    { name: "GitLab", icon: "fab fa-gitlab", color: "#FC6D26" },
+                    { name: "Bitbucket", icon: "fab fa-bitbucket", color: "#0052CC" },
+                    { name: "Docker", icon: "fab fa-docker", color: "#2496ed" },
+                    { name: "Kubernetes", icon: "fas fa-ship", color: "#326ce5" },
+                    { name: "Firebase", icon: "fas fa-fire", color: "#ffca28" },
+                    { name: "Supabase", icon: "fas fa-database", color: "#3ECF8E" },
+                    { name: "AWS", icon: "fab fa-aws", color: "#FF9900" },
+                    { name: "Azure", icon: "fab fa-microsoft", color: "#0078D4" },
+                    { name: "GCP", icon: "fab fa-google", color: "#4285F4" },
+                    { name: "Heroku", icon: "fab fa-heroku", color: "#430098" },
+                    { name: "Netlify", icon: "fas fa-cloud", color: "#00C7B7" },
+                    { name: "Vercel", icon: "fas fa-arrow-up", color: "#000000" }
+                ],
+                "Banco de Dados": [
+                    { name: "MySQL", icon: "fas fa-database", color: "#4479a1" },
+                    { name: "PostgreSQL", icon: "fas fa-database", color: "#336791" },
+                    { name: "SQLite", icon: "fas fa-database", color: "#003b57" },
+                    { name: "MongoDB", icon: "fas fa-database", color: "#47a248" },
+                    { name: "Redis", icon: "fas fa-database", color: "#dc382d" },
+                    { name: "Cassandra", icon: "fas fa-database", color: "#1287B1" },
+                    { name: "MariaDB", icon: "fas fa-database", color: "#003545" },
+                    { name: "Firebase Firestore", icon: "fas fa-fire", color: "#FFCA28" }
+                ],
+                "Mobile e Desktop": [
+                    { name: "React Native", icon: "fab fa-react", color: "#61dafb" },
+                    { name: "Flutter", icon: "fas fa-mobile-alt", color: "#02569B" },
+                    { name: "Ionic", icon: "fas fa-mobile", color: "#3880FF" },
+                    { name: "Xamarin", icon: "fab fa-microsoft", color: "#3498DB" },
+                    { name: "Electron", icon: "fas fa-desktop", color: "#47848F" },
+                    { name: "NativeScript", icon: "fab fa-js", color: "#3655FF" }
+                ],
+                "CI/CD e DevOps": [
+                    { name: "Jenkins", icon: "fas fa-server", color: "#D24939" },
+                    { name: "Travis CI", icon: "fas fa-check-circle", color: "#3EAAAF" },
+                    { name: "CircleCI", icon: "fas fa-circle", color: "#343434" },
+                    { name: "GitHub Actions", icon: "fab fa-github", color: "#2088FF" },
+                    { name: "Terraform", icon: "fas fa-mountain", color: "#623CE4" },
+                    { name: "Ansible", icon: "fas fa-cogs", color: "#EE0000" }
+                ],
+                "Testes": [
+                    { name: "Jest", icon: "fas fa-vial", color: "#C21325" },
+                    { name: "Mocha", icon: "fas fa-coffee", color: "#8D6748" },
+                    { name: "Chai", icon: "fas fa-mug-hot", color: "#A30701" },
+                    { name: "Cypress", icon: "fas fa-flag-checkered", color: "#17202C" },
+                    { name: "Selenium", icon: "fas fa-robot", color: "#43B02A" },
+                    { name: "Playwright", icon: "fas fa-theater-masks", color: "#2EAD33" },
+                    { name: "JUnit", icon: "fas fa-check-double", color: "#25A162" },
+                    { name: "PyTest", icon: "fas fa-vial", color: "#0A9EDC" }
+                ]
+            };
+            
+            let githubData = {
+                repos: 0,
+                stars: 0,
+                commits: 0,
+                followers: 0,
+                languages: {}
+            };
+            
+            let scheduleData = {};
+            let calendarData = {};
+            let weeklyScheduleData = {};
+            
+            let currentEditingTask = null;
+            let currentEditingNote = null;
+            let currentEditingLink = null;
+            
+            let currentDate = new Date();
+            
+            initApp();
+            
+            function initApp() {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+                
+                loadSavedData();
+                
+                loadUserData();
+                
+                renderTasks();
+                
+                renderNotes();
+                
+                renderLinks();
+                renderLinkCategories();
+                
+                renderAllTechnologies();
+                
+                renderCalendar();
+                
+                renderWeeklyScheduleFull();
+                
+                initLanguageChart();
+                
+                setupEventListeners();
+                
+                showToast('Bloomu carregado com sucesso! Que seus estudos floresçam! 🌸', 'success');
+            }
+            
+            function loadSavedData() {
+                const savedUserData = localStorage.getItem('userData');
+                const savedTasks = localStorage.getItem('tasks');
+                const savedNotes = localStorage.getItem('notes');
+                const savedLinks = localStorage.getItem('links');
+                const savedCategories = localStorage.getItem('categories');
+                const savedSchedule = localStorage.getItem('scheduleData');
+                const savedCalendar = localStorage.getItem('calendarData');
+                const savedStudiedTechs = localStorage.getItem('studiedTechs');
+                const savedWeeklySchedule = localStorage.getItem('weeklyScheduleData');
+                
+                if (savedUserData) userData = { ...userData, ...JSON.parse(savedUserData) };
+                if (savedTasks) tasks = JSON.parse(savedTasks);
+                if (savedNotes) notes = JSON.parse(savedNotes);
+                if (savedLinks) links = JSON.parse(savedLinks);
+                if (savedCategories) categories = JSON.parse(savedCategories);
+                if (savedSchedule) scheduleData = JSON.parse(savedSchedule);
+                if (savedCalendar) calendarData = JSON.parse(savedCalendar);
+                if (savedStudiedTechs) userData.studiedTechs = JSON.parse(savedStudiedTechs);
+                if (savedWeeklySchedule) weeklyScheduleData = JSON.parse(savedWeeklySchedule);
+            }
+            
+            function saveData() {
+                localStorage.setItem('userData', JSON.stringify(userData));
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                localStorage.setItem('notes', JSON.stringify(notes));
+                localStorage.setItem('links', JSON.stringify(links));
+                localStorage.setItem('categories', JSON.stringify(categories));
+                localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
+                localStorage.setItem('calendarData', JSON.stringify(calendarData));
+                localStorage.setItem('studiedTechs', JSON.stringify(userData.studiedTechs));
+                localStorage.setItem('weeklyScheduleData', JSON.stringify(weeklyScheduleData));
+            }
+            
+            function setupEventListeners() {
+                themeToggle.addEventListener('click', toggleTheme);
+                
+                navButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const targetPage = this.getAttribute('data-page');
+                        showPage(targetPage);
+                    });
+                });
+                
+                backButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        showPage('dashboard');
+                    });
+                });
+                
+                resetWeeklyScheduleBtn.addEventListener('click', resetWeeklySchedule);
+                
+                showAboutBtn.addEventListener('click', function() {
+                    aboutModal.classList.add('active');
+                });
+                
+                closeAboutModalBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        aboutModal.classList.remove('active');
+                    });
+                });
+                
+                aboutModal.addEventListener('click', function(e) {
+                    if (e.target === aboutModal) {
+                        aboutModal.classList.remove('active');
+                    }
+                });
+                
+                loadGithubData.addEventListener('click', loadGitHubData);
+                connectGithub.addEventListener('click', loadGitHubData);
+                
+                saveProfile.addEventListener('click', saveUserData);
+                
+                addTaskBtn.addEventListener('click', () => openTaskModal());
+                closeTaskModal.addEventListener('click', () => taskModal.classList.remove('active'));
+                cancelTask.addEventListener('click', () => taskModal.classList.remove('active'));
+                saveTask.addEventListener('click', saveTaskHandler);
+                
+                addNoteBtn.addEventListener('click', () => openNoteModal());
+                closeNoteModal.addEventListener('click', () => noteModal.classList.remove('active'));
+                cancelNote.addEventListener('click', () => noteModal.classList.remove('active'));
+                saveNote.addEventListener('click', saveNoteHandler);
+                
+                addLinkBtn.addEventListener('click', () => openLinkModal());
+                addCategoryBtn.addEventListener('click', addNewCategory);
+                closeLinkModal.addEventListener('click', () => linkModal.classList.remove('active'));
+                cancelLink.addEventListener('click', () => linkModal.classList.remove('active'));
+                saveLink.addEventListener('click', saveLinkHandler);
+                
+                filterTechBtn.addEventListener('click', filterTechnologies);
+                searchTechBtn.addEventListener('click', searchTechnologies);
+                manageTechs.addEventListener('click', () => showPage('dashboard'));
+                
+                prevMonthBtn.addEventListener('click', previousMonth);
+                nextMonthBtn.addEventListener('click', nextMonth);
+                
+                document.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('task-checkbox')) {
+                        const taskId = parseInt(e.target.closest('.checklist-item').dataset.id);
+                        const task = tasks.find(t => t.id === taskId);
+                        if (task) {
+                            task.completed = e.target.checked;
+                            if (task.completed) {
+                                showToast('Tarefa marcada como concluída! 🌟', 'success');
+                            }
+                            renderTasks();
+                            saveData();
+                        }
+                    }
+                });
+                
+                document.querySelectorAll('.modal-overlay').forEach(modal => {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.classList.remove('active');
+                        }
+                    });
+                });
+            }
+            
+            function showPage(pageId) {
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+                
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+            }
+            
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                
+                showToast(`Modo ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado`, 'success');
+            }
+            
+            function updateThemeIcon(theme) {
+                const icon = themeToggle.querySelector('i');
+                icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            
+            function loadUserData() {
+                userDisplayName.textContent = userData.name;
+                userDisplayBio.textContent = userData.job;
+                
+                const activeDays = calculateActiveDays();
+                const progress = calculateProgress();
+                const weeklyProgressValue = calculateWeeklyProgress();
+                
+                studyDays.textContent = activeDays;
+                progressPercentage.textContent = `${progress}%`;
+                techCount.textContent = userData.studiedTechs.length;
+                weeklyGoal.textContent = `${weeklyProgressValue}%`;
+                weeklyProgress.style.width = `${weeklyProgressValue}%`;
+                
+                profileName.value = userData.name;
+                profileEmail.value = userData.email;
+                profileJob.value = userData.job;
+                profileLevel.value = userData.level;
+                
+                renderUserTechnologies();
+            }
+            
+            function calculateActiveDays() {
+                let count = 0;
+                for (const date in calendarData) {
+                    if (calendarData[date].studied) {
+                        count++;
+                    }
+                }
+                return count > 0 ? count : userData.studyDays;
+            }
+            
+            function calculateProgress() {
+                const totalTechs = Object.values(allTechnologies).flat().length;
+                const studiedCount = userData.studiedTechs.length;
+                return Math.min(100, Math.round((studiedCount / totalTechs) * 100));
+            }
+            
+            function calculateWeeklyProgress() {
+                const today = new Date();
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+                startOfWeek.setHours(0,0,0,0);
+                
+                const endOfWeek = new Date(today);
+                endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+                endOfWeek.setHours(23,59,59,999);
+                
+                let studiedDays = 0;
+                for (const dateStr in calendarData) {
+                    const date = new Date(dateStr);
+                    if (date >= startOfWeek && date <= endOfWeek && calendarData[dateStr].studied) {
+                        studiedDays++;
+                    }
+                }
+                
+                const goal = 5;
+                return Math.min(100, Math.round((studiedDays / goal) * 100));
+            }
+            
+            function saveUserData() {
+                userData.name = profileName.value;
+                userData.email = profileEmail.value;
+                userData.job = profileJob.value;
+                userData.level = profileLevel.value;
+                
+                userDisplayName.textContent = userData.name;
+                userDisplayBio.textContent = userData.job;
+                
+                saveData();
+                showToast('Perfil atualizado com sucesso! 🌸', 'success');
+            }
+            
+            function openTaskModal(task = null) {
+                currentEditingTask = task;
+                
+                if (task) {
+                    taskModalTitle.textContent = 'Editar Tarefa';
+                    taskText.value = task.text;
+                    taskCategory.value = task.category;
+                    taskTime.value = task.time;
+                    taskDate.value = task.date;
+                } else {
+                    taskModalTitle.textContent = 'Nova Tarefa';
+                    taskText.value = '';
+                    taskCategory.value = 'JavaScript';
+                    taskTime.value = '';
+                    taskDate.value = 'Hoje';
+                }
+                
+                taskModal.classList.add('active');
+            }
+            
+            function saveTaskHandler() {
+                const text = taskText.value.trim();
+                const category = taskCategory.value;
+                const time = taskTime.value.trim();
+                const date = taskDate.value.trim();
+                
+                if (!text) {
+                    showToast('A descrição da tarefa é obrigatória', 'error');
+                    return;
+                }
+                
+                if (currentEditingTask) {
+                    currentEditingTask.text = text;
+                    currentEditingTask.category = category;
+                    currentEditingTask.time = time;
+                    currentEditingTask.date = date;
+                    showToast('Tarefa atualizada com sucesso! ✨', 'success');
+                } else {
+                    const newTask = {
+                        id: Date.now(),
+                        text,
+                        category,
+                        time,
+                        date,
+                        completed: false
+                    };
+                    tasks.unshift(newTask);
+                    showToast('Tarefa adicionada com sucesso! 📝', 'success');
+                }
+                
+                renderTasks();
+                taskModal.classList.remove('active');
+                saveData();
+            }
+            
+            function deleteTask(id) {
+                if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                    tasks = tasks.filter(task => task.id !== id);
+                    renderTasks();
+                    showToast('Tarefa excluída com sucesso! 🗑️', 'success');
+                    saveData();
+                }
+            }
+            
+            function renderTasks() {
+                tasksList.innerHTML = '';
+                
+                if (tasks.length === 0) {
+                    tasksList.innerHTML = '<div class="empty-state"><p>Nenhuma tarefa encontrada</p></div>';
+                    return;
+                }
+                
+                tasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = `checklist-item ${task.completed ? 'completed' : ''}`;
+                    taskElement.dataset.id = task.id;
+                    
+                    taskElement.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                        <div class="task-content">
+                            <div class="task-category">${task.category}</div>
+                            <div class="task-text">${task.text}</div>
+                            <div class="task-meta">
+                                <span><i class="far fa-clock"></i> ${task.time}</span>
+                                <span><i class="far fa-calendar"></i> ${task.date}</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn btn-icon btn-secondary" onclick="openTaskModal(${task.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-secondary" onclick="deleteTask(${task.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    tasksList.appendChild(taskElement);
+                });
+                
+                document.querySelectorAll('.task-actions .btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                });
+            }
+            
+            function openNoteModal(note = null) {
+                currentEditingNote = note;
+                
+                if (note) {
+                    noteModalTitle.textContent = 'Editar Anotação';
+                    noteTitle.value = note.title;
+                    noteContent.value = note.content;
+                    noteTags.value = note.tags ? note.tags.replace(/#/g, '').split(' ').filter(tag => tag).join(', ') : '';
+                } else {
+                    noteModalTitle.textContent = 'Nova Anotação';
+                    noteTitle.value = '';
+                    noteContent.value = '';
+                    noteTags.value = '';
+                }
+                
+                noteModal.classList.add('active');
+            }
+            
+            function saveNoteHandler() {
+                const title = noteTitle.value.trim();
+                const content = noteContent.value.trim();
+                const tags = noteTags.value.trim();
+
+                if (!title || !content) {
+                    showToast('Título e conteúdo são obrigatórios', 'error');
+                    return;
+                }
+
+                if (currentEditingNote) {
+                    currentEditingNote.title = title;
+                    currentEditingNote.content = content;
+                    currentEditingNote.tags = tags ? `#${tags.split(',').map(tag => tag.trim()).join(' #')}` : '';
+                    currentEditingNote.date = 'Editado agora';
+                    showToast('Anotação atualizada com sucesso! 📔', 'success');
+                } else {
+                    const newNote = {
+                        id: Date.now(),
+                        title,
+                        content,
+                        tags: tags ? `#${tags.split(',').map(tag => tag.trim()).join(' #')}` : '',
+                        date: 'Agora'
+                    };
+                    notes.unshift(newNote);
+                    showToast('Anotação adicionada com sucesso! 📝', 'success');
+                }
+
+                renderNotes();
+                noteModal.classList.remove('active');
+                saveData();
+            }
+            
+            function deleteNote(id) {
+                if (confirm('Tem certeza que deseja excluir esta anotação?')) {
+                    notes = notes.filter(note => note.id !== id);
+                    renderNotes();
+                    showToast('Anotação excluída com sucesso! 🗑️', 'success');
+                    saveData();
+                }
+            }
+            
+            function renderNotes() {
+                notesList.innerHTML = '';
+                
+                if (notes.length === 0) {
+                    notesList.innerHTML = '<div class="empty-state"><p>Nenhuma anotação encontrada</p></div>';
+                    return;
+                }
+                
+                notes.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'note-card';
+                    
+                    noteElement.innerHTML = `
+                        <div class="note-header">
+                            <h3 class="note-title">${note.title}</h3>
+                            <div class="text-muted">${note.date}</div>
+                        </div>
+                        <div class="note-body">${note.content.replace(/\n/g, '<br>')}</div>
+                        <div class="note-meta">${note.tags}</div>
+                        <div class="note-actions">
+                            <button class="btn btn-icon btn-secondary" onclick="openNoteModal(${note.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-secondary" onclick="deleteNote(${note.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    notesList.appendChild(noteElement);
+                });
+            }
+            
+            function openLinkModal(link = null) {
+                currentEditingLink = link;
+                
+                if (link) {
+                    linkModalTitle.textContent = 'Editar Link';
+                    linkTitle.value = link.title;
+                    linkUrl.value = link.url;
+                    linkCategory.value = link.category;
+                    linkIcon.value = link.icon;
+                } else {
+                    linkModalTitle.textContent = 'Novo Link';
+                    linkTitle.value = '';
+                    linkUrl.value = '';
+                    linkCategory.value = categories[0] || '';
+                    linkIcon.value = 'fas fa-link';
+                }
+                
+                linkModal.classList.add('active');
+            }
+            
+            function saveLinkHandler() {
+                const title = linkTitle.value.trim();
+                const url = linkUrl.value.trim();
+                const category = linkCategory.value.trim();
+                const icon = linkIcon.value.trim();
+
+                if (!title || !url) {
+                    showToast('Título e URL são obrigatórios', 'error');
+                    return;
+                }
+
+                if (currentEditingLink) {
+                    currentEditingLink.title = title;
+                    currentEditingLink.url = url;
+                    currentEditingLink.category = category;
+                    currentEditingLink.icon = icon;
+                    showToast('Link atualizado com sucesso! 🔗', 'success');
+                } else {
+                    const newLink = {
+                        id: Date.now(),
+                        title,
+                        url,
+                        category,
+                        icon
+                    };
+                    links.unshift(newLink);
+                    showToast('Link adicionado com sucesso! 📎', 'success');
+                }
+
+                renderLinks();
+                renderLinkCategories();
+                linkModal.classList.remove('active');
+                saveData();
+            }
+            
+            function deleteLink(id) {
+                if (confirm('Tem certeza que deseja excluir este link?')) {
+                    links = links.filter(link => link.id !== id);
+                    renderLinks();
+                    renderLinkCategories();
+                    showToast('Link excluído com sucesso! 🗑️', 'success');
+                    saveData();
+                }
+            }
+            
+            function renderLinks() {
+                savedLinks.innerHTML = '';
+                
+                if (links.length === 0) {
+                    savedLinks.innerHTML = '<div class="empty-state"><p>Nenhum link salvo</p></div>';
+                    return;
+                }
+                
+                links.forEach(link => {
+                    const linkElement = document.createElement('div');
+                    linkElement.className = 'link-item';
+                    
+                    linkElement.innerHTML = `
+                        <div class="link-icon">
+                            <i class="${link.icon}"></i>
+                        </div>
+                        <div class="link-content">
+                            <a href="${link.url}" target="_blank" class="link-title">${link.title}</a>
+                            <div class="link-url">${link.url}</div>
+                            <div class="link-meta">
+                                <span class="link-category">${link.category}</span>
+                                <div class="link-actions">
+                                    <button class="btn btn-icon btn-secondary" onclick="openLinkModal(${link.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-icon btn-secondary" onclick="deleteLink(${link.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    savedLinks.appendChild(linkElement);
+                });
+            }
+            
+            function addNewCategory() {
+                const categoryName = prompt('Digite o nome da nova categoria:');
+                if (categoryName && categoryName.trim()) {
+                    if (!categories.includes(categoryName.trim())) {
+                        categories.push(categoryName.trim());
+                        renderLinkCategories();
+                        saveData();
+                        showToast('Categoria adicionada com sucesso! 📂', 'success');
+                    } else {
+                        showToast('Esta categoria já existe', 'error');
+                    }
+                }
+            }
+            
+            function renderLinkCategories() {
+                linkCategories.innerHTML = '';
+                
+                const categoriesCount = {};
+                links.forEach(link => {
+                    categoriesCount[link.category] = (categoriesCount[link.category] || 0) + 1;
+                });
+                
+                categories.forEach(category => {
+                    const count = categoriesCount[category] || 0;
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'category-item';
+                    
+                    let icon = 'fas fa-folder';
+                    let color = '#3b82f6';
+                    
+                    if (category === 'JavaScript') {
+                        icon = 'fab fa-js-square';
+                        color = '#f7df1e';
+                    } else if (category === 'React') {
+                        icon = 'fab fa-react';
+                        color = '#61dafb';
+                    } else if (category === 'Node.js') {
+                        icon = 'fab fa-node-js';
+                        color = '#339933';
+                    } else if (category === 'Banco de Dados') {
+                        icon = 'fas fa-database';
+                        color = '#47a248';
+                    } else if (category === 'CSS') {
+                        icon = 'fab fa-css3-alt';
+                        color = '#1572b6';
+                    } else if (category === 'HTML') {
+                        icon = 'fab fa-html5';
+                        color = '#e34f26';
+                    }
+                    
+                    categoryElement.innerHTML = `
+                        <div class="category-icon">
+                            <i class="${icon}" style="color: ${color};"></i>
+                        </div>
+                        <div class="category-info">
+                            <div class="category-name">${category}</div>
+                            <div class="category-count">${count} link${count !== 1 ? 's' : ''}</div>
+                        </div>
+                    `;
+                    
+                    categoryElement.addEventListener('click', () => {
+                        const filteredLinks = links.filter(link => link.category === category);
+                        renderFilteredLinks(filteredLinks, category);
+                    });
+                    
+                    linkCategories.appendChild(categoryElement);
+                });
+            }
+            
+            function renderFilteredLinks(filteredLinks, category) {
+                savedLinks.innerHTML = '';
+                
+                if (filteredLinks.length === 0) {
+                    savedLinks.innerHTML = `<div class="empty-state"><p>Nenhum link na categoria ${category}</p></div>`;
+                    return;
+                }
+                
+                filteredLinks.forEach(link => {
+                    const linkElement = document.createElement('div');
+                    linkElement.className = 'link-item';
+                    
+                    linkElement.innerHTML = `
+                        <div class="link-icon">
+                            <i class="${link.icon}"></i>
+                        </div>
+                        <div class="link-content">
+                            <a href="${link.url}" target="_blank" class="link-title">${link.title}</a>
+                            <div class="link-url">${link.url}</div>
+                            <div class="link-meta">
+                                <span class="link-category">${link.category}</span>
+                                <div class="link-actions">
+                                    <button class="btn btn-icon btn-secondary" onclick="openLinkModal(${link.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-icon btn-secondary" onclick="deleteLink(${link.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    savedLinks.appendChild(linkElement);
+                });
+            }
+            
+            function renderAllTechnologies() {
+                techCategories.innerHTML = '';
+                
+                Object.keys(allTechnologies).forEach(category => {
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'tech-category';
+                    
+                    const title = document.createElement('h3');
+                    title.className = 'category-title';
+                    title.innerHTML = `<i class="fas fa-folder"></i> ${category}`;
+                    
+                    const techItems = document.createElement('div');
+                    techItems.className = 'tech-items';
+                    
+                    allTechnologies[category].forEach(tech => {
+                        const isStudied = userData.studiedTechs.includes(tech.name);
+                        const techElement = document.createElement('div');
+                        techElement.className = `tech-item ${isStudied ? 'studied' : ''}`;
+                        techElement.innerHTML = `
+                            <div class="tech-icon">
+                                <i class="${tech.icon}" style="color: ${tech.color};"></i>
+                            </div>
+                            <div class="tech-name">${tech.name}</div>
+                        `;
+                        
+                        techElement.addEventListener('click', () => {
+                            toggleTechStudied(tech.name);
+                        });
+                        
+                        techItems.appendChild(techElement);
+                    });
+                    
+                    categoryElement.appendChild(title);
+                    categoryElement.appendChild(techItems);
+                    techCategories.appendChild(categoryElement);
+                });
+            }
+            
+            function toggleTechStudied(techName) {
+                const index = userData.studiedTechs.indexOf(techName);
+                
+                if (index === -1) {
+                    userData.studiedTechs.push(techName);
+                    showToast(`${techName} marcada como estudada! 🌟`, 'success');
+                    
+                    updateProgress();
+                } else {
+                    userData.studiedTechs.splice(index, 1);
+                    showToast(`${techName} removida das estudadas`, 'info');
+                    
+                    updateProgress();
+                }
+                
+                techCount.textContent = userData.studiedTechs.length;
+                
+                renderAllTechnologies();
+                renderUserTechnologies();
+                
+                saveData();
+            }
+            
+            function updateProgress() {
+                const totalTechs = Object.values(allTechnologies).flat().length;
+                const studiedCount = userData.studiedTechs.length;
+                const newProgress = Math.min(100, Math.round((studiedCount / totalTechs) * 100));
+                
+                userData.progress = newProgress;
+                progressPercentage.textContent = `${userData.progress}%`;
+                
+                userData.studyDays = Math.max(userData.studyDays, studiedCount * 3);
+                studyDays.textContent = userData.studyDays;
+                
+                userData.weeklyGoal = Math.min(100, Math.round(newProgress * 1.2));
+                weeklyGoal.textContent = `${userData.weeklyGoal}%`;
+                weeklyProgress.style.width = `${userData.weeklyGoal}%`;
+                
+                loadUserData();
+            }
+            
+            function filterTechnologies() {
+                const filter = prompt('Digite o nome da tecnologia para filtrar:');
+                if (filter) {
+                    const filteredCategories = {};
+                    
+                    Object.keys(allTechnologies).forEach(category => {
+                        const filteredTechs = allTechnologies[category].filter(tech => 
+                            tech.name.toLowerCase().includes(filter.toLowerCase())
+                        );
+                        
+                        if (filteredTechs.length > 0) {
+                            filteredCategories[category] = filteredTechs;
+                        }
+                    });
+                    
+                    renderFilteredTechnologies(filteredCategories);
+                    showToast(`Filtrando por: ${filter}`, 'info');
+                }
+            }
+            
+            function searchTechnologies() {
+                const searchTerm = prompt('Digite o nome da tecnologia para buscar:');
+                if (searchTerm) {
+                    const searchResults = [];
+                    
+                    Object.keys(allTechnologies).forEach(category => {
+                        allTechnologies[category].forEach(tech => {
+                            if (tech.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                searchResults.push({...tech, category});
+                            }
+                        });
+                    });
+                    
+                    if (searchResults.length > 0) {
+                        const groupedResults = {};
+                        searchResults.forEach(tech => {
+                            if (!groupedResults[tech.category]) {
+                                groupedResults[tech.category] = [];
+                            }
+                            groupedResults[tech.category].push(tech);
+                        });
+                        
+                        renderFilteredTechnologies(groupedResults);
+                        showToast(`Encontradas ${searchResults.length} tecnologias para "${searchTerm}"`, 'success');
+                    } else {
+                        showToast(`Nenhuma tecnologia encontrada para "${searchTerm}"`, 'error');
+                    }
+                }
+            }
+            
+            function renderFilteredTechnologies(filteredCategories) {
+                techCategories.innerHTML = '';
+                
+                if (Object.keys(filteredCategories).length === 0) {
+                    techCategories.innerHTML = '<div class="empty-state"><p>Nenhuma tecnologia encontrada</p></div>';
+                    return;
+                }
+                
+                Object.keys(filteredCategories).forEach(category => {
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'tech-category';
+                    
+                    const title = document.createElement('h3');
+                    title.className = 'category-title';
+                    title.innerHTML = `<i class="fas fa-folder"></i> ${category}`;
+                    
+                    const techItems = document.createElement('div');
+                    techItems.className = 'tech-items';
+                    
+                    filteredCategories[category].forEach(tech => {
+                        const isStudied = userData.studiedTechs.includes(tech.name);
+                        const techElement = document.createElement('div');
+                        techElement.className = `tech-item ${isStudied ? 'studied' : ''}`;
+                        techElement.innerHTML = `
+                            <div class="tech-icon">
+                                <i class="${tech.icon}" style="color: ${tech.color};"></i>
+                            </div>
+                            <div class="tech-name">${tech.name}</div>
+                        `;
+                        
+                        techElement.addEventListener('click', () => {
+                            toggleTechStudied(tech.name);
+                        });
+                        
+                        techItems.appendChild(techElement);
+                    });
+                    
+                    categoryElement.appendChild(title);
+                    categoryElement.appendChild(techItems);
+                    techCategories.appendChild(categoryElement);
+                });
+            }
+            
+            function renderUserTechnologies() {
+                profileTechs.innerHTML = '';
+                githubTechs.innerHTML = '';
+                
+                userData.studiedTechs.forEach(techName => {
+                    let icon = 'fas fa-code';
+                    let color = '#3b82f6';
+                    
+                    for (const category of Object.keys(allTechnologies)) {
+                        const tech = allTechnologies[category].find(t => t.name === techName);
+                        if (tech) {
+                            icon = tech.icon;
+                            color = tech.color;
+                            break;
+                        }
+                    }
+                    
+                    const techTag = document.createElement('div');
+                    techTag.className = 'tech-tag studied';
+                    techTag.innerHTML = `
+                        <i class="${icon}" style="color: ${color};"></i> ${techName}
+                    `;
+                    
+                    techTag.addEventListener('click', () => {
+                        toggleTechStudied(techName);
+                    });
+                    
+                    profileTechs.appendChild(techTag.cloneNode(true));
+                    githubTechs.appendChild(techTag);
+                });
+                
+                if (userData.studiedTechs.length === 0) {
+                    profileTechs.innerHTML = '<div class="text-muted text-center w-full">Nenhuma tecnologia estudada</div>';
+                    githubTechs.innerHTML = '<div class="text-muted text-center w-full">Nenhuma tecnologia detectada</div>';
+                }
+            }
+            
+            function renderCalendar() {
+                const month = currentDate.getMonth();
+                const year = currentDate.getFullYear();
+                const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                
+                currentMonth.textContent = `${monthNames[month]} ${year}`;
+                calendarBadge.textContent = `${monthNames[month]} ${year}`;
+                
+                calendarDays.innerHTML = '';
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                
+                const firstDayIndex = firstDay.getDay();
+                
+                for (let i = 0; i < firstDayIndex; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'calendar-day empty';
+                    calendarDays.appendChild(emptyDay);
+                }
+                
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day';
+                    dayElement.textContent = i;
+                    
+                    const today = new Date();
+                    if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        dayElement.classList.add('today');
+                    }
+                    
+                    const dateKey = `${year}-${month + 1}-${i}`;
+                    if (calendarData[dateKey]) {
+                        if (calendarData[dateKey].notes || calendarData[dateKey].tasks) {
+                            dayElement.classList.add('has-notes');
+                        }
+                        if (calendarData[dateKey].studied) {
+                            dayElement.classList.add('studied');
+                        }
+                    }
+                    
+                    dayElement.addEventListener('click', () => {
+                        const dateKey = `${year}-${month + 1}-${i}`;
+                        if (!calendarData[dateKey]) {
+                            calendarData[dateKey] = {};
+                        }
+                        
+                        calendarData[dateKey].studied = !calendarData[dateKey].studied;
+                        
+                        if (calendarData[dateKey].studied) {
+                            dayElement.classList.add('studied');
+                            showToast(`Dia ${i} marcado como estudado! 📚`, 'success');
+                            
+                            userData.studyDays++;
+                            studyDays.textContent = userData.studyDays;
+                        } else {
+                            dayElement.classList.remove('studied');
+                            showToast(`Dia ${i} desmarcado`, 'info');
+                        }
+                        
+                        saveData();
+                        loadUserData();
+                    });
+                    
+                    calendarDays.appendChild(dayElement);
+                }
+            }
+            
+            function previousMonth() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+                showToast('Mês anterior', 'info');
+            }
+            
+            function nextMonth() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+                showToast('Próximo mês', 'info');
+            }
+            
+            function renderWeeklyScheduleFull() {
+                weeklyScheduleFull.innerHTML = '';
+                
+                const weekDaysHeader = document.createElement('div');
+                weekDaysHeader.className = 'week-days-full';
+                weekDaysHeader.innerHTML = `
+                    <div class="time-label-full">Horário</div>
+                    <div class="day-header-full">Segunda</div>
+                    <div class="day-header-full">Terça</div>
+                    <div class="day-header-full">Quarta</div>
+                    <div class="day-header-full">Quinta</div>
+                    <div class="day-header-full">Sexta</div>
+                    <div class="day-header-full">Sábado</div>
+                    <div class="day-header-full">Domingo</div>
+                `;
+                weeklyScheduleFull.appendChild(weekDaysHeader);
+                
+                for (let hour = 5; hour <= 24; hour++) {
+                    const timeRow = document.createElement('div');
+                    timeRow.className = 'time-row-full';
+                    
+                    const timeLabel = hour === 24 ? '00:00' : `${hour.toString().padStart(2, '0')}:00`;
+                    timeRow.innerHTML = `<div class="time-label-full">${timeLabel}</div>`;
+                    
+                    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+                    days.forEach(day => {
+                        const slot = document.createElement('div');
+                        slot.className = 'time-slot-full';
+                        slot.dataset.day = day;
+                        slot.dataset.time = timeLabel;
+                        
+                        const key = `${day}-${timeLabel}`;
+                        if (weeklyScheduleData[key]) {
+                            slot.classList.add('has-activity');
+                            slot.textContent = weeklyScheduleData[key];
+                        }
+                        
+                        slot.addEventListener('click', () => {
+                            editWeeklyScheduleSlot(slot);
+                        });
+                        
+                        timeRow.appendChild(slot);
+                    });
+                    
+                    weeklyScheduleFull.appendChild(timeRow);
+                }
+            }
+            
+            function editWeeklyScheduleSlot(slot) {
+                const day = slot.dataset.day;
+                const time = slot.dataset.time;
+                const key = `${day}-${time}`;
+                
+                if (slot.classList.contains('has-activity')) {
+                    slot.classList.remove('has-activity');
+                    slot.textContent = '';
+                    delete weeklyScheduleData[key];
+                    showToast('Atividade removida', 'info');
+                } else {
+                    const activity = prompt('Digite a atividade para este horário:');
+                    if (activity) {
+                        slot.classList.add('has-activity');
+                        slot.textContent = activity.length > 10 ? activity.substring(0, 10) + '...' : activity;
+                        weeklyScheduleData[key] = activity;
+                        showToast('Atividade adicionada', 'success');
+                    }
+                }
+                
+                saveData();
+            }
+            
+            function resetWeeklySchedule() {
+                const timeSlots = document.querySelectorAll('.time-slot-full.has-activity');
+                
+                timeSlots.forEach(slot => {
+                    slot.classList.remove('has-activity');
+                    slot.textContent = '';
+                });
+                
+                weeklyScheduleData = {};
+                saveData();
+                showToast('Cronograma semanal resetado com sucesso', 'success');
+            }
+            
+            async function loadGitHubData() {
+                const username = githubUsername.value.trim();
+                
+                if (!username) {
+                    showToast('Digite um nome de usuário do GitHub', 'error');
+                    return;
+                }
+                
+                showToast('Carregando dados do GitHub...', 'info');
+                
+                try {
+                    const userResponse = await fetch(`https://api.github.com/users/${username}`);
+                    if (!userResponse.ok) {
+                        throw new Error('Usuário não encontrado');
+                    }
+                    const user = await userResponse.json();
+                    
+                    const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+                    const repos = await reposResponse.json();
+                    
+                    let totalStars = 0;
+                    let totalCommits = 0;
+                    const languages = {};
+                    
+                    repos.forEach(repo => {
+                        totalStars += repo.stargazers_count;
+                        
+                        if (repo.language) {
+                            languages[repo.language] = (languages[repo.language] || 0) + 1;
+                        }
+                    });
+                    
+                    githubData = {
+                        repos: repos.length,
+                        stars: totalStars,
+                        commits: totalCommits,
+                        followers: user.followers,
+                        languages: languages
+                    };
+                    
+                    document.getElementById('ghRepos').textContent = githubData.repos;
+                    document.getElementById('ghStars').textContent = githubData.stars;
+                    document.getElementById('ghCommits').textContent = githubData.commits.toLocaleString();
+                    document.getElementById('ghFollowers').textContent = githubData.followers;
+                    
+                    updateLanguageChart();
+                    
+                    updateGitHubTechs(languages);
+                    
+                    showToast('Dados do GitHub carregados com sucesso! 🌟', 'success');
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar dados do GitHub:', error);
+                    showToast('Erro ao carregar dados do GitHub', 'error');
+                }
+            }
+            
+            function updateGitHubTechs(languages) {
+                githubTechs.innerHTML = '';
+                
+                Object.keys(languages).forEach(language => {
+                    let icon = 'fas fa-code';
+                    let color = '#3b82f6';
+                    
+                    for (const category of Object.keys(allTechnologies)) {
+                        const tech = allTechnologies[category].find(t => t.name === language);
+                        if (tech) {
+                            icon = tech.icon;
+                            color = tech.color;
+                            break;
+                        }
+                    }
+                    
+                    const techTag = document.createElement('div');
+                    techTag.className = 'tech-tag';
+                    techTag.innerHTML = `
+                        <i class="${icon}" style="color: ${color};"></i> ${language}
+                    `;
+                    
+                    githubTechs.appendChild(techTag);
+                });
+                
+                if (Object.keys(languages).length === 0) {
+                    githubTechs.innerHTML = '<div class="text-muted text-center w-full">Nenhuma tecnologia detectada</div>';
+                }
+            }
+            
+            function initLanguageChart() {
+                const ctx = document.getElementById('languageChart').getContext('2d');
+                
+                const data = {
+                    labels: ['JavaScript', 'Python', 'HTML/CSS', 'Java', 'Outros'],
+                    datasets: [{
+                        data: [40, 25, 20, 10, 5],
+                        backgroundColor: [
+                            '#f7df1e',
+                            '#3776ab',
+                            '#e34f26',
+                            '#007396',
+                            '#94a3b8'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                };
+                
+                const options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    family: 'Inter, sans-serif'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary'),
+                            titleColor: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                            bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                };
+                
+                window.languageChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: options
+                });
+            }
+            
+            function updateLanguageChart() {
+                if (window.languageChart && githubData.languages) {
+                    const labels = Object.keys(githubData.languages);
+                    const data = Object.values(githubData.languages);
+                    
+                    const total = data.reduce((sum, value) => sum + value, 0);
+                    const percentages = data.map(value => Math.round((value / total) * 100));
+                    
+                    window.languageChart.data.labels = labels;
+                    window.languageChart.data.datasets[0].data = percentages;
+                    window.languageChart.update();
+                }
+            }
+            
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                let icon = 'fas fa-info-circle';
+                if (type === 'success') icon = 'fas fa-check-circle';
+                if (type === 'error') icon = 'fas fa-exclamation-circle';
+                if (type === 'warning') icon = 'fas fa-exclamation-triangle';
+                
+                toast.innerHTML = `
+                    <i class="${icon}"></i>
+                    <span>${message}</span>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, 4000);
+            }
+            
+            window.openTaskModal = function(id) {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    openTaskModal(task);
+                }
+            };
+            
+            window.deleteTask = deleteTask;
+            
+            window.openNoteModal = function(id) {
+                const note = notes.find(n => n.id === id);
+                if (note) {
+                    openNoteModal(note);
+                }
+            };
+            
+            window.deleteNote = deleteNote;
+            
+            window.openLinkModal = function(id) {
+                const link = links.find(l => l.id === id);
+                if (link) {
+                    openLinkModal(link);
+                }
+            };
+            
+            window.deleteLink = deleteLink;
+        });
+    </script>
+</body>
+</html>
